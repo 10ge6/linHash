@@ -57,6 +57,10 @@ struct Block
 
     void print()
     {
+        for(int i = 0; i < Keys.size(); i++) {
+            cout << ' ' << Keys[i] << endl;
+            if(i == Keys.size()-1) cout << "----" << endl;
+        }
     }
 };
 
@@ -145,6 +149,11 @@ struct Table
 
     void print()
     {
+        for(int i = 0; i < Buckets.size(); i++) {
+            cout << " L" << i << endl << "----" << endl;
+            Buckets[i]->print();
+            if(i != Buckets.size()-1) cout << endl;
+        }
     }
 };
 
@@ -163,4 +172,8 @@ int main(int argc, char **argv)
         cin >> input;
         t->insert(input);
     }
+
+    t->print();
+
+    return EXIT_SUCCESS;
 }
