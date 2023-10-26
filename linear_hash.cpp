@@ -14,9 +14,10 @@ struct Block {
     int maxSize;
 
     // constructor
-    Block() {
+    Block(int maxSizeInicial) {
         next = NULL;
         Keys.clear();
+        maxSize = maxSizeInicial;
     }
 
     void add(int key) {
@@ -24,14 +25,14 @@ struct Block {
             Keys.push_back(key);
             return;
         } else if(next == NULL) {
-            next = new Block();
+            next = new Block(maxSize);
         }
         next->add(key);
     }
 
     bool checkKey(int key) {
         for(int i = 0; i < Keys.size(); i++) {
-            count++;
+            accessCount++;
             if(Keys[i] == key) return true;
         };
         
@@ -45,59 +46,63 @@ struct Block {
     void print() {
 
     }
-}
+};
 
 struct Table {
     vector<Block *> Buckets;
-    int l, N, m;
-    int threshold;
+    int l, N, m, pStore;
+    float threshold;
     int keysTotal;
 
     // constructor
-    Table() {
+    Table(int mInicial, int p, float aMaxInicial) {
         l = 0;
         N = 0;
         keysTotal = 0;
-        // Buckets.clear();
-        Buckets.push_back(new Block());
-        Buckets.push_back(new Block());
+        threshold = aMaxInicial;
+        Buckets.clear();
+        for(int i = 0; i < mInicial; i++) {
+            Buckets.push_back(new Block(p));
+        }
+        pStore = p;
     }
 
-    unsigned int hash(int k, int l/*, int m*/) {
-        // int m = Buckets.size();
-        int m = 2;
-        return k % (pow(2,l) * m);
+    unsigned int hash(int k, int l) {
+        int m = Buckets.size();
+        return k % (int)(pow(2,l) * m);
     }
 
     void insert(int k, int l) {
         unsigned int h = hash(k, l);
         if(h < N) h = hash(k, l+1);
-        Buckets[h].add(k);
+        Buckets[h]->add(k);
         keysTotal++;
-        if(keysTotal / (Buckets.size() * Buckets[0].maxSize) > threshold) {
-            Bucket = new Bucket();
+        if(keysTotal / (Buckets.size() * pStore) > threshold) {
             vector<int> tmpKeys; // recalc hash
-            Block tmp = Buckets[n];
+            tmpKeys.clear();
+            Block *tmpBlock = new Block(pStore);
+            tmpBlock = Buckets[N];
             
             do {
-                for(int i = 0; i < tmp.Keys.size()) {
-                    tmpKeys.push_back(Buckets[n].Keys[i]);
+                for(int i = 0; i < tmpBlock->Keys.size(); i++) {
+                    tmpKeys.push_back(tmpBlock->Keys[i]);
                 }
-                tmp = tmp.next;
-            } while(tmp.next != NULL);
+                tmpBlock = tmpBlock->next;
+            } while(tmpBlock->next != NULL);
             
-            Buckets[N].clear();
+            Buckets[N]->Keys.clear();
+            Buckets.push_back(new Block(pStore));
 
             for(int i = 0; i < tmpKeys.size(); i++) {
                 h = hash(tmpKeys[i], l+1);
-                Buckets[h].add(tmpKeys[i]);
+                Buckets[h]->add(tmpKeys[i]);
             }
 
             N++;
         }
         if(N > pow(2,l)) {
             N = 0;
-            L++;
+            l++;
         }
     }
 
@@ -108,23 +113,22 @@ struct Table {
     void print() {
 
     }
-}
+};
 
 int main(int argc, char **argv) {
-    cout << "Uso: qtd paginas, fator de carga, no. chaves e chaves" << endl;
+    cout << "Uso: qtd inicial de paginas, tamanho de pagina, fator de carga, no. chaves e chaves" << endl;
 
-    int keyQty, p, aMax; // m = 2
-    cin >> p >> aMax >> keyQty;
-    int inputKeys[keyQty];
+    int keyQty, m, p;
+    float aMax;
+    cin >> m >> p >> aMax >> keyQty;
+    Table *t = new Table(m, p, aMax);
     
-    for(int i = 0; i< keyQty; i++) {
-        cin >> inputKeys[i];
+    for(int i = 0; i < keyQty; i++) {
+        int input;
+        cin >> input;
+        t->insert(input, t->l);
     }
-
-    Table t = new Table();
-    t.threshold = aMax;
-    t.Buckets[0].maxSize = p;
-    t.Buckets[1].maxSize = p;
+    
 }
 
 // Table t;
