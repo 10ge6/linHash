@@ -57,10 +57,14 @@ struct Block
 
     void print()
     {
-        for(int i = 0; i < Keys.size(); i++) {
+        for (int i = 0; i < Keys.size(); i++)
+        {
             cout << ' ' << Keys[i] << endl;
-            if(i == Keys.size()-1) cout << "----" << endl;
+            if (i == Keys.size() - 1)
+                cout << "----" << endl;
         }
+        if (next != NULL)
+            next->print();
     }
 };
 
@@ -89,7 +93,7 @@ struct Table
 
     unsigned int hash(int k, int l)
     {
-        int valorHash = k % (int)(pow(2, l) * m);
+        int valorHash = k % (int)(pow(2, l) * pStore);
         return valorHash;
     }
 
@@ -136,23 +140,32 @@ struct Table
 
             N++;
         }
-        if (N > pow(2, l))
+        if (N >= (int)(pow(2, l) * pStore))
         {
             N = 0;
             l++;
         }
     }
 
-    bool checkBlock()
+    bool checkBlock(int key)
     {
+        {
+            int i = hash(key, l);
+            if (i < N)
+                i = hash(key, l + 1);
+            return Buckets[i]->checkKey(key);
+        }
     }
 
     void print()
     {
-        for(int i = 0; i < Buckets.size(); i++) {
-            cout << " L" << i << endl << "----" << endl;
+        for (int i = 0; i < Buckets.size(); i++)
+        {
+            cout << " L" << i << endl
+                 << "----" << endl;
             Buckets[i]->print();
-            if(i != Buckets.size()-1) cout << endl;
+            if (i != Buckets.size() - 1)
+                cout << endl;
         }
     }
 };
