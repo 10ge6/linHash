@@ -7,6 +7,7 @@
 
 using namespace std;
 
+int blockscriados = 0;
 int accessCount = 0;
 
 struct Block
@@ -33,6 +34,7 @@ struct Block
         else if (next == NULL)
         {
             next = new Block(maxSize);
+            blockscriados++;
         }
         next->add(key);
     }
@@ -89,12 +91,12 @@ struct Table
             Buckets.push_back(new Block(p));
         }
         pStore = p;
-        m = Buckets.size();
+        m = mInicial;
     }
 
     unsigned int hash(int k, int l)
     {
-        int valorHash = k % (int)(pow(2, l) * pStore);
+        int valorHash = k % (int)(pow(2, l) * m);
         return valorHash;
     }
 
@@ -141,7 +143,7 @@ struct Table
 
             N++;
         }
-        if (N >= (int)(pow(2, l) * pStore))
+        if (N >= (int)(pow(2, l) * m))
         {
             N = 0;
             l++;
@@ -169,13 +171,25 @@ struct Table
                 cout << endl;
         }
     }
+
+    double alphaMedio()
+    {
+        return (double)(keysTotal) / (((double)(blockscriados) + (double)(Buckets.size())) * (double)(pStore));
+    }
+
+    double pAsterisco()
+    {
+        return ((double)(blockscriados) + (double)(Buckets.size())) / (double)(Buckets.size());
+    }
 };
 
-int generateRandomKey(int min, int max) {
+int generateRandomKey(int min, int max)
+{
     return min + rand() % (max - min + 1);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 
     vector<int> pageSizes = {1, 5, 10, 20, 50};
     vector<float> alphaMaxValues = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
@@ -183,16 +197,26 @@ int main(int argc, char **argv) {
 
     srand(static_cast<unsigned>(time(nullptr)));
 
-    for (int pageSize : pageSizes) {
-        for (float alphaMax : alphaMaxValues) {
-            for (int repeat = 0; repeat < repetitions; repeat++) {
-                Table *t = new Table(2, pageSize, alphaMax);
+    for (int pageSize : pageSizes)
+    {
+        for (float alphaMax : alphaMaxValues)
+        {
+            for (int repeat = 0; repeat < repetitions; repeat++)
+            {
 
+                Table *t = new Table(2, pageSize, alphaMax);
                 int n = 1000 * pageSize;
-                for (int i = 0; i < n; i++) {
+                for (int i = 0; i < n; i++)
+                {
                     int input = generateRandomKey(1, 10000);
                     t->insert(input);
                 }
+                t->print();
+
+                cout << t->pAsterisco() << endl;
+                cout << t->keysTotal << endl;
+                cout << t->alphaMedio() << endl;
+                delete t;
             }
         }
     }
