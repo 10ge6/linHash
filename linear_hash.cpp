@@ -3,6 +3,7 @@
 #include <fstream>
 #include <queue>
 #include <cmath>
+#include <ctime>
 
 using namespace std;
 
@@ -45,7 +46,7 @@ struct Block
                 return true;
         };
 
-        if (next = NULL)
+        if (next == NULL)
         {
             return false;
         }
@@ -170,23 +171,31 @@ struct Table
     }
 };
 
-int main(int argc, char **argv)
-{
-    cout << "Uso: qtd inicial de paginas, tamanho de pagina, fator de carga, no. chaves e chaves" << endl;
+int generateRandomKey(int min, int max) {
+    return min + rand() % (max - min + 1);
+}
 
-    int keyQty, m, p;
-    float aMax;
-    cin >> m >> p >> aMax >> keyQty;
-    Table *t = new Table(m, p, aMax);
+int main(int argc, char **argv) {
 
-    for (int i = 0; i < keyQty; i++)
-    {
-        int input;
-        cin >> input;
-        t->insert(input);
+    vector<int> pageSizes = {1, 5, 10, 20, 50};
+    vector<float> alphaMaxValues = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+    const int repetitions = 10;
+
+    srand(static_cast<unsigned>(time(nullptr)));
+
+    for (int pageSize : pageSizes) {
+        for (float alphaMax : alphaMaxValues) {
+            for (int repeat = 0; repeat < repetitions; repeat++) {
+                Table *t = new Table(2, pageSize, alphaMax);
+
+                int n = 1000 * pageSize;
+                for (int i = 0; i < n; i++) {
+                    int input = generateRandomKey(1, 10000);
+                    t->insert(input);
+                }
+            }
+        }
     }
-
-    t->print();
 
     return EXIT_SUCCESS;
 }
