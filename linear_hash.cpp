@@ -1,9 +1,6 @@
 #include <iostream>
-// #include <cstdlib>
-// #include <fstream>
 #include <queue>
 #include <cmath>
-// #include <ctime>
 #include <climits>
 
 using namespace std;
@@ -69,6 +66,14 @@ struct Block
         }
         if (next != NULL)
             next->print();
+    }
+
+    int depth(int count)
+    {
+        count++;
+        if (next != NULL)
+            count += next->depth(count);
+        return count;
     }
 };
 
@@ -182,6 +187,17 @@ struct Table
     {
         return ((double)(blockscriados) + (double)(Buckets.size())) / (double)(Buckets.size());
     }
+
+    int Lmax()
+    {
+        int Lmax = 0;
+        for (int i = 0; i < Buckets.size(); i++)
+        {
+            int count = Buckets[i]->depth(0);
+            if(count > Lmax) Lmax = count;
+        }
+        return Lmax;
+    }
 };
 
 int generateRandomKey(int min, int max)
@@ -195,8 +211,6 @@ int main(int argc, char **argv)
     vector<float> alphaMaxValues = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
     const int repetitions = 10;
     
-    // cout << "loop=" << repetitions << endl;
-
     srand(static_cast<unsigned>(time(nullptr)));
 
     // desempenho quanto ao espaco
@@ -215,18 +229,43 @@ int main(int argc, char **argv)
                     int input = generateRandomKey(0, 16383); // 14 bits
                     t->insert(input);
                 }
-                // t->print();
                 alphaMedioIterTotal += t->alphaMedio();
                 pAsteriscoIterTotal += t->pAsterisco();
-                // cout << "loop " << repeat+1 << ':' << endl;
-                // cout << "p*=" << t->pAsterisco() << endl;
-                // cout << "keysTotal = " << t->keysTotal << endl;
-                // cout << "alphaMedio=" << t->alphaMedio() << endl;
+                blockscriados = 0;
                 delete t;
             }
             cout << "avg_alphaMedio=" << alphaMedioIterTotal / repetitions << endl;
             cout << "avg_pAsterisco=" << pAsteriscoIterTotal / repetitions << endl;
         }
+    }
+
+    // desempenho quanto ao numero medio de acessos
+   
+    // desempenho durante a inclusao dos n registros
+    int pageSize = 10;
+    float alphaMax = 0.85;
+    for (int repeat = 0; repeat < repetitions; repeat++)
+    {
+        cout << "iter " << repeat+1 << endl;
+        double alphaMedio_iIterTotal = 0.0, pAsterisco_iIterTotal = 0.0, Lmax_iIterTotal = 0.0;
+        Table *t = new Table(2, pageSize, alphaMax);
+        int n = 10000 * pageSize;
+        for(int i = 1; i <= n; i++)
+        {
+            int input = generateRandomKey(0, 16383); // 14 bits
+            t->insert(input);
+            alphaMedio_iIterTotal += t->alphaMedio();
+            pAsterisco_iIterTotal += t->pAsterisco();
+            Lmax_iIterTotal += t->Lmax();
+            if(i % 5000 == 0) {
+                cout << "section " << i / 5000 << endl;
+                cout << "avg_alphaMedio_i=" << alphaMedio_iIterTotal / i << endl;
+                cout << "avg_pAsterisco_i=" << pAsterisco_iIterTotal / i << endl;
+                cout << "avg_Lmax_i=" << Lmax_iIterTotal / i << endl;
+            }
+        }
+        blockscriados = 0;
+        delete t;
     }
 
     return EXIT_SUCCESS;
