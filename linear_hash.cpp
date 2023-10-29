@@ -1,9 +1,10 @@
 #include <iostream>
-#include <cstdlib>
-#include <fstream>
+// #include <cstdlib>
+// #include <fstream>
 #include <queue>
 #include <cmath>
-#include <ctime>
+// #include <ctime>
+#include <climits>
 
 using namespace std;
 
@@ -190,34 +191,41 @@ int generateRandomKey(int min, int max)
 
 int main(int argc, char **argv)
 {
-
     vector<int> pageSizes = {1, 5, 10, 20, 50};
     vector<float> alphaMaxValues = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
     const int repetitions = 10;
+    
+    // cout << "loop=" << repetitions << endl;
 
     srand(static_cast<unsigned>(time(nullptr)));
 
+    // desempenho quanto ao espaco
     for (int pageSize : pageSizes)
     {
         for (float alphaMax : alphaMaxValues)
         {
+            double alphaMedioIterTotal = 0.0, pAsteriscoIterTotal = 0.0;
+            cout << "p=" << pageSize << ",alphaMax=" << alphaMax << endl;
             for (int repeat = 0; repeat < repetitions; repeat++)
             {
-
                 Table *t = new Table(2, pageSize, alphaMax);
                 int n = 1000 * pageSize;
                 for (int i = 0; i < n; i++)
                 {
-                    int input = generateRandomKey(1, 10000);
+                    int input = generateRandomKey(0, 16383); // 14 bits
                     t->insert(input);
                 }
-                t->print();
-
-                cout << t->pAsterisco() << endl;
-                cout << t->keysTotal << endl;
-                cout << t->alphaMedio() << endl;
+                // t->print();
+                alphaMedioIterTotal += t->alphaMedio();
+                pAsteriscoIterTotal += t->pAsterisco();
+                // cout << "loop " << repeat+1 << ':' << endl;
+                // cout << "p*=" << t->pAsterisco() << endl;
+                // cout << "keysTotal = " << t->keysTotal << endl;
+                // cout << "alphaMedio=" << t->alphaMedio() << endl;
                 delete t;
             }
+            cout << "avg_alphaMedio=" << alphaMedioIterTotal / repetitions << endl;
+            cout << "avg_pAsterisco=" << pAsteriscoIterTotal / repetitions << endl;
         }
     }
 
