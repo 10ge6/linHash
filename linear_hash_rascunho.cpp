@@ -42,6 +42,7 @@ struct Block
     {
         for (int i = 0; i < Keys.size(); i++)
         {
+            accessCount++;
             if (Keys[i] == key)
                 return true;
         };
@@ -52,7 +53,6 @@ struct Block
         }
         else
         {
-            accessCount++;
             return next->checkKey(key);
         }
     }
@@ -114,7 +114,7 @@ struct Table
             h = hash(k, l + 1);
         Buckets[h]->add(k);
         keysTotal++;
-        if (keysTotal / ((blockscriados + Buckets.size()) * pStore) > threshold)
+        if (keysTotal / (Buckets.size() * pStore) > threshold)
         {
             vector<int> tmpKeys; // recalc hash
             tmpKeys.clear();
@@ -163,7 +163,6 @@ struct Table
             int i = hash(key, l);
             if (i < N)
                 i = hash(key, l + 1);
-            accessCount++;
             return Buckets[i]->checkKey(key);
         }
     }
@@ -180,6 +179,17 @@ struct Table
         }
     }
 
+    double alphaMedio()
+    {
+        int a = blockscriados;
+        return (double)(keysTotal) / (((double)(blockscriados) + (double)(Buckets.size())) * (double)(pStore));
+    }
+
+    double pAsterisco()
+    {
+        return ((double)(blockscriados) + (double)(Buckets.size())) / (double)(Buckets.size());
+    }
+
     int Lmax()
     {
         int Lmax = 0;
@@ -191,16 +201,6 @@ struct Table
         }
         return Lmax;
     }
-
-    double alphaMedio()
-    {
-        return (double)(keysTotal) / (((double)(blockscriados) + (double)(Buckets.size())) * (double)(pStore));
-    }
-
-    double pAsterisco()
-    {
-        return ((double)(blockscriados) + (double)(Buckets.size())) / (double)(Buckets.size());
-    }
 };
 
 int generateRandomKey(int min, int max)
@@ -210,7 +210,6 @@ int generateRandomKey(int min, int max)
 
 int main(int argc, char **argv)
 {
-
     vector<int> pageSizes = {1, 5, 10, 20, 50};
     vector<float> alphaMaxValues = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
     const int repetitions = 10;
@@ -301,11 +300,10 @@ int main(int argc, char **argv)
             cout << "avg_S=" << Stotal / repetitions << endl;
         }
     }
-
     // desempenho durante a inclusao dos n registros
     int pageSize = 10;
     float alphaMax = 0.85;
-    double alphaMedioVec[20] = { 0 }, pAsteriscoVec[20] = { 0 }, LmaxVec[20] = { 0 };
+    double alphaMedioVec[20] = {0}, pAsteriscoVec[20] = {0}, LmaxVec[20] = {0};
     for (int repeat = 0; repeat < repetitions; repeat++)
     {
         cout << "iter " << repeat + 1 << endl;
@@ -333,7 +331,7 @@ int main(int argc, char **argv)
         blockscriados = 0;
         delete t;
     }
-    for(int i = 0; i < 20; i++)
+    for (int i = 0; i < 20; i++)
     {
         alphaMedioVec[i] /= repetitions;
         pAsteriscoVec[i] /= repetitions;
@@ -341,4 +339,4 @@ int main(int argc, char **argv)
     }
 
     return EXIT_SUCCESS;
-};
+}
