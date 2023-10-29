@@ -216,32 +216,6 @@ int main(int argc, char **argv)
 
     srand(static_cast<unsigned>(time(nullptr)));
 
-    // desempenho quanto ao espaco
-    for (int pageSize : pageSizes)
-    {
-        for (float alphaMax : alphaMaxValues)
-        {
-            double alphaMedioIterTotal = 0.0, pAsteriscoIterTotal = 0.0;
-            cout << "p=" << pageSize << ",alphaMax=" << alphaMax << endl;
-            for (int repeat = 0; repeat < repetitions; repeat++)
-            {
-                Table *t = new Table(2, pageSize, alphaMax);
-                int n = 1000 * pageSize;
-                for (int i = 0; i < n; i++)
-                {
-                    int input = generateRandomKey(0, 16383); // 14 bits
-                    t->insert(input);
-                }
-                alphaMedioIterTotal += t->alphaMedio();
-                pAsteriscoIterTotal += t->pAsterisco();
-                blockscriados = 0;
-                delete t;
-            }
-            cout << "avg_alphaMedio=" << alphaMedioIterTotal / repetitions << endl;
-            cout << "avg_pAsterisco=" << pAsteriscoIterTotal / repetitions << endl;
-        }
-    }
-
     // desempenho quanto ao numero medio de acessos
     vector<vector<float>> x_axis = {};
     for (int pageSize : pageSizes)
@@ -258,7 +232,7 @@ int main(int argc, char **argv)
                 vector<int> inputs = {};
                 for (int i = 0; i < n; i++)
                 {
-                    int input = generateRandomKey(1, 10000);
+                    int input = generateRandomKey(0, 16383); // 14 bits
                     t->insert(input);
                     inputs.push_back(input);
                 }
@@ -271,10 +245,10 @@ int main(int argc, char **argv)
                 vector<int> KC = {};
                 for (int i = 0; i < ceil(0.2 * n); i++)
                 {
-                    int min_input = *std::min_element(inputs.begin(), inputs.end());
-                    int max_input = *std::max_element(inputs.begin(), inputs.end());
-                    int teste = generateRandomKey(min_input, max_input);
-                    t->checkBlock(teste);
+                    // int min_input = *std::min_element(inputs.begin(), inputs.end());
+                    // int max_input = *std::max_element(inputs.begin(), inputs.end());
+                    int index = generateRandomKey(0, (1000 * pageSize) - 1);
+                    t->checkBlock(inputs[index]);
                     KC.push_back(accessCount);
                     accessCount = 0;
                 }
@@ -282,31 +256,89 @@ int main(int argc, char **argv)
                 vector<int> KS = {};
                 for (int i = 0; i < ceil(0.2 * n); i++)
                 {
-                    int k = generateRandomKey(1, 10000);
-                    if (std::find(inputs.begin(), inputs.end(), k) == inputs.end())
-                    {
-                        t->checkBlock(k);
-                        KS.push_back(accessCount);
-                        accessCount = 0;
-                    }
+                    int k = generateRandomKey(16384, 32767);
+                    t->checkBlock(k);
+                    KS.push_back(accessCount);
+                    accessCount = 0;
                 }
 
                 Ctotal += std::accumulate(KC.begin(), KC.end(), 0) / ceil(0.2 * n);
+                cout << std::accumulate(KC.begin(), KC.end(), 0) / ceil(0.2 * n) << endl;
                 Stotal += std::accumulate(KS.begin(), KS.end(), 0) / ceil(0.2 * n);
-
+                cout << std::accumulate(KS.begin(), KS.end(), 0) / ceil(0.2 * n) << endl;
                 delete t;
             }
             cout << "avg_C=" << Ctotal / repetitions << endl;
             cout << "avg_S=" << Stotal / repetitions << endl;
         }
     }
+
+    // desempenho quanto ao espaco
+    double alphaMaxpVec[40][2], alphaMedioVec[40] = {0}, pAsteriscoVec[40] = {0};
+    int forIter = 0;
+    for (int pageSize : pageSizes)
+    {
+        for (float alphaMax : alphaMaxValues)
+        {
+            double alphaMedioIterTotal = 0.0, pAsteriscoIterTotal = 0.0;
+            // cout << "p=" << pageSize << ",alphaMax=" << alphaMax << endl;
+            alphaMaxpVec[forIter][0] = alphaMax;
+            alphaMaxpVec[forIter][1] = pageSize;
+            for (int repeat = 0; repeat < repetitions; repeat++)
+            {
+                Table *t = new Table(2, pageSize, alphaMax);
+                int n = 1000 * pageSize;
+                for (int i = 0; i < n; i++)
+                {
+                    int input = generateRandomKey(0, 16383); // 14 bits
+                    t->insert(input);
+                }
+                alphaMedioIterTotal += t->alphaMedio();
+                pAsteriscoIterTotal += t->pAsterisco();
+                blockscriados = 0;
+                delete t;
+            }
+            // cout << "avg_alphaMedio=" << alphaMedioIterTotal / repetitions << endl;
+            alphaMedioVec[forIter] = alphaMedioIterTotal / repetitions;
+            // cout << "avg_pAsterisco=" << pAsteriscoIterTotal / repetitions << endl;
+            pAsteriscoVec[forIter] = pAsteriscoIterTotal / repetitions;
+            forIter++;
+        }
+    }
+    cout << '[';
+    for(int i = 0; i < 40; i++)
+    {
+        cout << "\'(" << alphaMaxpVec[i][0] << ',' << alphaMaxpVec[i][1] << "\')";
+        if(i < 39) cout << ',';
+    }
+    cout << "],[";
+    for(int i = 0; i < 40; i++)
+    {
+        cout << alphaMedioVec[i];
+        if(i < 39) cout << ',';
+    }
+    cout << ']' << endl << '[';
+    for(int i = 0; i < 40; i++)
+    {
+        cout << "\'(" << alphaMaxpVec[i][0] << ',' << alphaMaxpVec[i][1] << "\')";
+        if(i < 39) cout << ',';
+    }
+    cout << "],[";
+    for(int i = 0; i < 40; i++)
+    {
+        cout << pAsteriscoVec[i];
+        if(i < 39) cout << ',';
+    }
+    cout << ']' << endl;
+
+    
     // desempenho durante a inclusao dos n registros
     int pageSize = 10;
     float alphaMax = 0.85;
-    double alphaMedioVec[20] = {0}, pAsteriscoVec[20] = {0}, LmaxVec[20] = {0};
+    double alphaMedioiVec[20] = {0}, pAsteriscoiVec[20] = {0}, LmaxVec[20] = {0};
     for (int repeat = 0; repeat < repetitions; repeat++)
     {
-        cout << "iter " << repeat + 1 << endl;
+        // cout << "iter " << repeat + 1 << endl;
         double alphaMedio_iIterTotal = 0.0, pAsterisco_iIterTotal = 0.0, Lmax_iIterTotal = 0.0;
         Table *t = new Table(2, pageSize, alphaMax);
         int n = 1000 * pageSize;
@@ -319,11 +351,11 @@ int main(int argc, char **argv)
             Lmax_iIterTotal += t->Lmax();
             if (i % 500 == 0)
             {
-                cout << "section " << i / 500 << "..." << endl;
+                // cout << "section " << i / 500 << "..." << endl;
                 // cout << "avg_alphaMedio_i=" << alphaMedio_iIterTotal / i << endl;
-                alphaMedioVec[(i / 500) - 1] += alphaMedio_iIterTotal / i;
+                alphaMedioiVec[(i / 500) - 1] += alphaMedio_iIterTotal / i;
                 // cout << "avg_pAsterisco_i=" << pAsterisco_iIterTotal / i << endl;
-                pAsteriscoVec[(i / 500) - 1] += pAsterisco_iIterTotal / i;
+                pAsteriscoiVec[(i / 500) - 1] += pAsterisco_iIterTotal / i;
                 // cout << "avg_Lmax_i=" << Lmax_iIterTotal / i << endl;
                 LmaxVec[(i / 500) - 1] += Lmax_iIterTotal / i;
             }
@@ -331,12 +363,43 @@ int main(int argc, char **argv)
         blockscriados = 0;
         delete t;
     }
+    cout << '[';
+    for(int i = 1; i <= 20; i++) {
+        cout << i * 500;
+        if (i < 20) cout << ',';
+    }
+    cout << "],[";
     for (int i = 0; i < 20; i++)
     {
-        alphaMedioVec[i] /= repetitions;
-        pAsteriscoVec[i] /= repetitions;
-        LmaxVec[i] /= repetitions;
+        alphaMedioiVec[i] /= repetitions;
+        cout << alphaMedioiVec[i];
+        if (i < 19) cout << ',';
     }
+    cout << "],[";
+    for(int i = 1; i <= 20; i++) {
+        cout << i * 500;
+        if (i < 20) cout << ',';
+    }
+    cout << "],[";
+    for (int i = 0; i < 20; i++)
+    {
+        pAsteriscoiVec[i] /= repetitions;
+        cout << pAsteriscoiVec[i];
+        if (i < 19) cout << ',';
+    }
+    cout << "],[";
+    for(int i = 1; i <= 20; i++) {
+        cout << i * 500;
+        if (i < 20) cout << ',';
+    }
+    cout << "],[";
+    for (int i = 0; i < 20; i++)
+    {
+        LmaxVec[i] /= repetitions;
+        cout << LmaxVec[i];
+        if (i < 19) cout << ',';
+    }
+    cout << ']' << endl;
 
     return EXIT_SUCCESS;
 }
