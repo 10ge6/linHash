@@ -40,9 +40,10 @@ struct Block
 
     bool checkKey(int key)
     {
+
         for (int i = 0; i < Keys.size(); i++)
         {
-            accessCount++;
+
             if (Keys[i] == key)
                 return true;
         };
@@ -53,6 +54,7 @@ struct Block
         }
         else
         {
+            accessCount++;
             return next->checkKey(key);
         }
     }
@@ -163,6 +165,7 @@ struct Table
             int i = hash(key, l);
             if (i < N)
                 i = hash(key, l + 1);
+            accessCount++;
             return Buckets[i]->checkKey(key);
         }
     }
@@ -222,8 +225,7 @@ int main(int argc, char **argv)
     {
         for (float alphaMax : alphaMaxValues)
         {
-            x_axis.push_back({float(pageSize), alphaMax});
-            int Ctotal = 0, Stotal = 0;
+            double Ctotal = 0, Stotal = 0;
             for (int repeat = 0; repeat < repetitions; repeat++)
             {
 
@@ -242,30 +244,30 @@ int main(int argc, char **argv)
                 // alfaMedio.push_back(t->alphaMedio());
                 // pEstrela.push_back(t->pAsterisco());
 
-                vector<int> KC = {};
+                int KC = 0;
                 for (int i = 0; i < ceil(0.2 * n); i++)
                 {
                     // int min_input = *std::min_element(inputs.begin(), inputs.end());
                     // int max_input = *std::max_element(inputs.begin(), inputs.end());
                     int index = generateRandomKey(0, (1000 * pageSize) - 1);
                     t->checkBlock(inputs[index]);
-                    KC.push_back(accessCount);
+                    KC += accessCount;
                     accessCount = 0;
                 }
 
-                vector<int> KS = {};
+                int KS = 0;
                 for (int i = 0; i < ceil(0.2 * n); i++)
                 {
                     int k = generateRandomKey(16384, 32767);
                     t->checkBlock(k);
-                    KS.push_back(accessCount);
+                    KS += accessCount;
                     accessCount = 0;
                 }
 
-                Ctotal += std::accumulate(KC.begin(), KC.end(), 0) / ceil(0.2 * n);
-                cout << std::accumulate(KC.begin(), KC.end(), 0) / ceil(0.2 * n) << endl;
-                Stotal += std::accumulate(KS.begin(), KS.end(), 0) / ceil(0.2 * n);
-                cout << std::accumulate(KS.begin(), KS.end(), 0) / ceil(0.2 * n) << endl;
+                Ctotal += KC / ceil(0.2 * n);
+                cout << KC / ceil(0.2 * n) << endl;
+                Stotal += KS / ceil(0.2 * n);
+                cout << KS / ceil(0.2 * n) << endl;
                 delete t;
             }
             cout << "avg_C=" << Ctotal / repetitions << endl;
@@ -306,32 +308,36 @@ int main(int argc, char **argv)
         }
     }
     cout << '[';
-    for(int i = 0; i < 40; i++)
+    for (int i = 0; i < 40; i++)
     {
         cout << "\'(" << alphaMaxpVec[i][0] << ',' << alphaMaxpVec[i][1] << "\')";
-        if(i < 39) cout << ',';
+        if (i < 39)
+            cout << ',';
     }
     cout << "],[";
-    for(int i = 0; i < 40; i++)
+    for (int i = 0; i < 40; i++)
     {
         cout << alphaMedioVec[i];
-        if(i < 39) cout << ',';
+        if (i < 39)
+            cout << ',';
     }
-    cout << ']' << endl << '[';
-    for(int i = 0; i < 40; i++)
+    cout << ']' << endl
+         << '[';
+    for (int i = 0; i < 40; i++)
     {
         cout << "\'(" << alphaMaxpVec[i][0] << ',' << alphaMaxpVec[i][1] << "\')";
-        if(i < 39) cout << ',';
+        if (i < 39)
+            cout << ',';
     }
     cout << "],[";
-    for(int i = 0; i < 40; i++)
+    for (int i = 0; i < 40; i++)
     {
         cout << pAsteriscoVec[i];
-        if(i < 39) cout << ',';
+        if (i < 39)
+            cout << ',';
     }
     cout << ']' << endl;
 
-    
     // desempenho durante a inclusao dos n registros
     int pageSize = 10;
     float alphaMax = 0.85;
@@ -364,40 +370,49 @@ int main(int argc, char **argv)
         delete t;
     }
     cout << '[';
-    for(int i = 1; i <= 20; i++) {
+    for (int i = 1; i <= 20; i++)
+    {
         cout << i * 500;
-        if (i < 20) cout << ',';
+        if (i < 20)
+            cout << ',';
     }
     cout << "],[";
     for (int i = 0; i < 20; i++)
     {
         alphaMedioiVec[i] /= repetitions;
         cout << alphaMedioiVec[i];
-        if (i < 19) cout << ',';
+        if (i < 19)
+            cout << ',';
     }
     cout << "],[";
-    for(int i = 1; i <= 20; i++) {
+    for (int i = 1; i <= 20; i++)
+    {
         cout << i * 500;
-        if (i < 20) cout << ',';
+        if (i < 20)
+            cout << ',';
     }
     cout << "],[";
     for (int i = 0; i < 20; i++)
     {
         pAsteriscoiVec[i] /= repetitions;
         cout << pAsteriscoiVec[i];
-        if (i < 19) cout << ',';
+        if (i < 19)
+            cout << ',';
     }
     cout << "],[";
-    for(int i = 1; i <= 20; i++) {
+    for (int i = 1; i <= 20; i++)
+    {
         cout << i * 500;
-        if (i < 20) cout << ',';
+        if (i < 20)
+            cout << ',';
     }
     cout << "],[";
     for (int i = 0; i < 20; i++)
     {
         LmaxVec[i] /= repetitions;
         cout << LmaxVec[i];
-        if (i < 19) cout << ',';
+        if (i < 19)
+            cout << ',';
     }
     cout << ']' << endl;
 
