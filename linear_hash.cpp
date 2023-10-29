@@ -254,7 +254,7 @@ int main(int argc, char **argv)
     cout << '[';
     for (int i = 0; i < 40; i++)
     {
-        cout << "\'(" << alphaMaxpVec[i][0] << ',' << alphaMaxpVec[i][1] << "\')";
+        cout << "\'(" << alphaMaxpVec[i][0] << ',' << alphaMaxpVec[i][1] << ")\'";
         if (i < 39)
             cout << ',';
     }
