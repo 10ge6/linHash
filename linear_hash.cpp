@@ -285,10 +285,11 @@ int main(int argc, char **argv)
 
     // desempenho quanto ao numero medio de acessos
     vector<vector<float>> x_axis = {};
-    double mediaC[40] = {0}, mediaS[40] = {0};
-    int forIter1;
+    double mediaCPS[5] = {0}, mediaCAM[8] = {0}, mediaSPS[5] = {0}, mediaSAM[8] = {0};
+    int forIterPS = 0;
     for (int pageSize : pageSizes)
     {
+        int forIterAM = 0;
         for (float alphaMax : alphaMaxValues)
         {
             // double Ctotal = 0, Stotal = 0;
@@ -331,25 +332,36 @@ int main(int argc, char **argv)
                 }
 
                 // Ctotal += KC / ceil(0.2 * n);
-                mediaC[forIter1] += KC / ceil(0.2 * n);
+                mediaCAM[forIterAM] += KC / ceil(0.2 * n);
+                mediaCPS[forIterPS] += KC / ceil(0.2 * n);
                 // cout << KC / ceil(0.2 * n) << endl;
                 // Stotal += KS / ceil(0.2 * n);
-                mediaS[forIter1] += KS / ceil(0.2 * n);
+                mediaSAM[forIterAM] += KS / ceil(0.2 * n);
+                mediaSPS[forIterPS] += KS / ceil(0.2 * n);
                 // cout << KS / ceil(0.2 * n) << endl;
                 delete t;
             }
-            forIter1++;
+            forIterAM++;
             // cout << "avg_C=" << Ctotal / repetitions << endl;
             // cout << "avg_S=" << Stotal / repetitions << endl;
         }
+        forIterPS++;
     }
-    for(int i = 0; i < 40; i++)
+    for(int i = 0; i < 8; i++)
     {
-        mediaC[i] /= repetitions;
+        mediaCAM[i] /= repetitions;
     }
-    for(int i = 0; i < 40; i++)
+    for(int i = 0; i < 8; i++)
     {
-        mediaS[i] /= repetitions;
+        mediaSAM[i] /= repetitions;
+    }
+    for(int i = 0; i < 5; i++)
+    {
+        mediaCPS[i] /= (repetitions * 8);
+    }
+    for(int i = 0; i < 5; i++)
+    {
+        mediaSPS[i] /= (repetitions * 8);
     }
     cout << '[';
     for(int i = 0; i < 8; i++)
@@ -358,22 +370,22 @@ int main(int argc, char **argv)
         if(i < 7) cout << ',';
     }
     cout << "],[";
-    for(int i = 0; i < 40; i++)
-    {
-        cout << mediaC[i];
-        if(i < 39) cout << ',';
-    }
-    cout << ']' << endl << endl <<'[';
     for(int i = 0; i < 8; i++)
     {
-        cout << pageSizes[i];
+        cout << mediaCAM[i];
         if(i < 7) cout << ',';
     }
-    cout << "],[";
-    for(int i = 0; i < 40; i++)
+    cout << ']' << endl << endl <<'[';
+    for(int i = 0; i < 5; i++)
     {
-        cout << mediaC[i];
-        if(i < 39) cout << ',';
+        cout << pageSizes[i];
+        if(i < 4) cout << ',';
+    }
+    cout << "],[";
+    for(int i = 0; i < 5; i++)
+    {
+        cout << mediaCPS[i];
+        if(i < 4) cout << ',';
     }
     cout << ']' << endl << endl << '[';
     for(int i = 0; i < 8; i++)
@@ -382,22 +394,22 @@ int main(int argc, char **argv)
         if(i < 7) cout << ',';
     }
     cout << "],[";
-    for(int i = 0; i < 40; i++)
-    {
-        cout << mediaS[i];
-        if(i < 39) cout << ',';
-    }
-    cout << ']' << endl << endl << '[';
     for(int i = 0; i < 8; i++)
     {
-        cout << pageSizes[i];
+        cout << mediaSAM[i];
         if(i < 7) cout << ',';
     }
-    cout << "],[";
-    for(int i = 0; i < 40; i++)
+    cout << ']' << endl << endl << '[';
+    for(int i = 0; i < 5; i++)
     {
-        cout << mediaS[i];
-        if(i < 39) cout << ',';
+        cout << pageSizes[i];
+        if(i < 4) cout << ',';
+    }
+    cout << "],[";
+    for(int i = 0; i < 5; i++)
+    {
+        cout << mediaSPS[i];
+        if(i < 4) cout << ',';
     }
     cout << ']' << endl;
 
